@@ -1,0 +1,221 @@
+{
+  "openapi": "3.0.0",
+    
+  "info": {
+    "description": " Teaching Tool is an full stack application developed to support effective collaboration between students and faculties at the University of Washington - Bothell.",
+    "version": "1.0.0",
+    "title": "Teaching Tools - Software Engineering Studio",
+    "contact": {
+        "name" : "API support",
+        "email" : "poojapal@uw.edu, mkochanski@uw.edu"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+
+  "components": {
+
+    "schemas": {
+      "exportSyllabusPostBody": {
+        "properties": {
+
+          "exportType": {
+            "type": "string"
+          },
+          "courseId": {
+            "type": "string"
+          },
+          "isSaveAll": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+
+
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "tags": [
+    {
+      "name": "API End points",
+      "description": "all the REST end points available in the Teaching Tools application"
+    }
+  ],
+      
+  "paths": {
+    "/getDistinctRoles": {
+      "get": {
+        "tags": [
+          "List distinct roles"
+        ],
+        "summary": "For the currently logged in user this api gets all the distinct roles at the course level",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "description": "Authozation token for accessing the Canvas"
+          },
+          {
+            "in": "path",
+            "name": "per_page",
+            "required": true,
+            "description": " By default the reponses will be limited so set a 50 or 100 to get an entire response"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of Distinct roles  "
+          },
+          "400": {
+              "description": "Roles object is populated as 'not found'"
+          }, 
+          "403": {
+              "description": {}
+          },
+          "404":{
+              "description": ""
+          }
+        }
+      }
+    },
+    "/courses": {
+      "get": {
+        "tags": [
+          " List enrolled courses "
+        ],
+        "summary": "For the currently logged in user, lists all the available courses that are enrolled to  ",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "description": "Authozation token for accessing the Canvas"
+          },
+          {
+            "in": "path",
+            "name": "per_page",
+            "required": true,
+            "description": " By default the reponses will be limited so set a 50 or 100 to get an entire response"
+                  
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": " A response object with the List of enrolled courses"
+          },
+          "404": {
+            "description": " The page that you are trying to access does not"
+          },
+          "403": {
+            "description": " Forbidden !! This page is forbidden because authentication error"
+          }
+
+        }
+      }
+
+    },
+    "/exportSyllabus": {
+      "post": {
+        "tags": [
+          " Export syllabus to PDF type "
+        ],
+        "summary": " exports the syllabi of the course in pdf file and zip file containing the pdf if multiple coures are selected ",
+        "requestBody": {
+          "description": "Book Request Post Object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/exportSyllabusPostBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": " A response will the succesful download message and files will be downloaded in the working directory"
+          }
+        }
+      }
+
+    },
+    "/getSyllabusBody/{courseId}": {
+      "get": {
+        "tags": [
+          " Extract syllabus 'body' for a course "
+        ],
+        "summary": "  This is an helper API while exporting syllabi of any course. which returns body section of syllabus   ",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "description": "Authozation token for accessing the Canvas"
+          },
+          {
+            "in": "path",
+            "name": "courseId",
+            "required": true,
+            "description": " pass the course Id for which we want to fetch syllabus body"
+            
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": " An response object with the syllabus body details"
+          },
+          "403": {
+            "description": " Forbidden !! This page is forbidden because authentication error"
+          }
+        }
+      }
+
+    },
+    "/getSyllabusSummary/{courseId}": {
+      "get": {
+        "tags": [
+          " Extract syllabus 'summary' for a course "
+        ],
+        "summary": "  This is an helper API while exporting syllabi of any course. which returns summary section of syllabus   ",
+        "parameters": [
+          
+          {
+            "in": "path",
+            "name": "courseId",
+            "required": true,
+            "description": " pass the course Id for which we want to fetch syllabus body"
+          
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": " An response object with the syllabus summary details on assignmnet name, due date and so on"
+          }
+        }
+      }
+
+    },
+    "/getTerms": {
+      "get": {
+        "tags": [
+          " List details on Courses "
+        ],
+        "summary": "Lists entities having details about the courses",
+        "responses": {
+          "200": {
+            "description": " An response object is  a List with the entities having details about the courses such as role, id, name, term"
+          }
+        }
+      }
+
+    }
+  }
+}
+  

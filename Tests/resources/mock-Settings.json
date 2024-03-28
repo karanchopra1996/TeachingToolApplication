@@ -1,0 +1,10 @@
+{"allow_final_grade_override": "False",
+ "allow_student_discussion_topics": "True",
+ "allow_student_forum_attachments": "True",
+ "allow_student_discussion_editing": "True",
+ "allow_student_discussion_reporting": "True",
+ "allow_student_organized_groups": "True",
+ "syllabus_course_summary": "True",
+ "homeroom_course": "True",
+ "course_color": "red",
+ "default_due_time": "23:59:59"}

@@ -1,0 +1,137 @@
+{
+	"course_good": { 
+		"data": {"id":1, "name":"Teaching Tools Testbed", "uuid":"XHMHT"},
+		"status_code": 200
+	},
+   "course": 
+		{"id":1, "name":"Teaching Tools Testbed", "uuid":"XHMHT"}
+   ,
+	"courses": [
+		{"id":1, "name":"Teaching Tools Testbed", "uuid":"XHMHT"},
+		{"id":2, "name":"Software Engineering Studio Badging", "uuid":"xgmtH"}
+  ],
+	"students": [
+		{"id": 1, "name": "Billy Bob", "email": "bbob@uw.fake"}, 
+		{"id": 2, "name": "Curly Sue", "email": "csue@uw.fake"}, 
+		{"id": 3, "name": "Rocky Road", "email": "rroad@uw.fake"}
+	],
+	"users": [
+		{"id": 1, "name": "Billy Bob", "email": "bbob@uw.fake"}, 
+		{"id": 2, "name": "Curly Sue", "email": "csue@uw.fake"}, 
+		{"id": 3, "name": "Rocky Road", "email": "rroad@uw.fake"},
+		{"id": 4, "name": "Professor Dude", "email": "dude@uw.fake"}, 
+		{"id": 5, "name": "TA Awesome", "email": "awesome@uw.fake"}
+	],
+	"groups": [
+		{"id": 1, "name": "Group 1", "group_category_id": 1, "course_id": 1}, 
+		{"id": 2, "name": "Group 2", "group_category_id": 1, "course_id": 1}, 
+		{"id": 3, "name": "Group 3", "group_category_id": 2, "course_id": 1}, 
+		{"id": 4, "name": "Group 4", "group_category_id": 2, "course_id": 1}
+	],
+	"group_categories": [
+		{"id": 1, "name": "Student Groups", "role": "student_organized", "course_id": 1},
+		{"id": 2, "name": "Test Groups", "role": null, "course_id": 1}
+	],
+	"folders": [
+		{"id": 1, "name": "course files", "full_name": "course files", "parent_folder_id": null, "folders_url": "https://example.com/api/v1/folders/1/folders", "files_url": "https://uw.beta.instructure.com/api/v1/folders/9518684/files"}, 
+		{"id": 2, "name": "Folder 1", "full_name": "course files/Folder 1", "parent_folder_id": 1, "folders_url": "https://example.com/api/v1/folders/2/folders", "files_url": "https://uw.beta.instructure.com/api/v1/folders/10437759/files"}, 
+		{"id": 3, "name": "SubFolder 1", "full_name": "course files/Folder 1/SubFolder 1", "parent_folder_id": 2, "folders_url": "https://example.com/api/v1/folders/3/folders", "files_url": "https://uw.beta.instructure.com/api/v1/folders/10632846/files"}, 
+		{"id": 4, "name": "Folder 2", "full_name": "course files/Folder2", "parent_folder_id": 1, "folders_url": "https://example.com/api/v1/folders/4/folders", "files_url": "https://uw.beta.instructure.com/api/v1/folders/11177370/files"}
+	],
+	"files": [
+		{"id": 1, "folder_id": 2, "display_name": "Midterm Ethics topic.docx", "filename": "Midterm+Ethics+topic.docx", "content-type": "text/plain", "url": "https://uw.beta.instructure.com/files/89075739/download?download_frd=1&verifier=eoZpYJ75GvpwZugOYNmSlcJwk7dGgpVvMOQhtxsb"}, 
+		{"id": 2, "folder_id": 2, "display_name": "Test File 2.pdf", "filename": "Test+File+2.pdf", "content-type": "application/pdf", "url": "https://uw.beta.instructure.com/files/86708119/download?download_frd=1&verifier=PNsQgd11iGOQqYcCa1i8AjuuHbxEZRLgmacN6GAX"}, 
+		{"id": 3, "folder_id": 2, "display_name": "TTT_Syllabus.docx", "filename": "TTT_Syllabus.docx", "content-type": "text/plain", "url": "https://uw.beta.instructure.com/files/88232562/download?download_frd=1&verifier=zs4TkrfJkWGAqDmRTdbnyJEXRTH3Ob4fsj4s3OZQ"}, 
+		{"id": 4, "folder_id": 1, "display_name": "Teaching Tools Testbed.docx", "filename": "Teaching+Tools+Testbed.docx", "content-type": "text/plain", "url": "https://uw.beta.instructure.com/files/93703865/download?download_frd=1&verifier=e2cuSrmkGbIAw8xmJC53IoIylCjxRhS1v4tAQRp9"}, 
+		{"id": 5, "folder_id": 1, "display_name": "Test File.pdf", "filename": "Test+File.pdf", "content-type": "application/pdf", "url": "https://uw.beta.instructure.com/files/86544022/download?download_frd=1&verifier=5lCcIERqnpc74zmBf4T8523nVGkZLLkTWJxBJbJd"}, 
+		{"id": 6, "folder_id": 1, "display_name": "Test File 2.pdf", "filename": "Test+File+2.pdf", "content-type": "application/pdf", "url": "https://uw.beta.instructure.com/files/86544031/download?download_frd=1&verifier=BXzKoBrH5XdxUfV5VpAkFpJliMP8XYG2EY2KgWB2"}, 
+		{"id": 7, "folder_id": 1, "display_name": "TTT_Syllabus.docx", "filename": "TTT_Syllabus.docx", "content-type": "text/plain", "url": "https://uw.beta.instructure.com/files/88656279/download?download_frd=1&verifier=13T2wV0Y9wSDgtsO6oOQyZvvGOugukqUM0ymRGaS"} 
+	],
+	"pages": [
+		{"page_id": 1, "url": "testing-pages", "title": "Testing Pages", "hide_from_students": false, "body": null}, 
+		{"page_id": 2, "url": "second-page-test", "title": "Second Page Test", "hide_from_students": false, "body": null}, 
+		{"page_id": 3, "url": "ttt-syllabus", "title": "TTT_Syllabus", "hide_from_students": false, "body": null}, 
+		{"page_id": 4, "url": "testing-pages-2", "title": "Testing Pages-2", "hide_from_students": false, "body": null}
+	],
+	"assignments": [
+		{"id": 1, "name": "Assignment_1_Test", "assignment_group_id": 1, "points_possible": 10.0, "description": "<p>This is a test assignment to see if I can pull it from the Canvas API.</p>"}, 
+		{"id": 2, "name": "Assignment_2", "assignment_group_id": 1, "points_possible": 30.0, "description": "<p>Another Test assignment.</p>"}, 
+		{"id": 3, "name": "Quiz 1", "assignment_group_id": 1, "points_possible": 2.0, "description": "<p>This is a quiz for testing.</p>"}, 
+		{"id": 4, "name": "PP : Assignment 2", "assignment_group_id": 1, "points_possible": 0.0, "description": ""}, 
+		{"id": 5, "name": "PP :: TEST ", "assignment_group_id": 1, "points_possible": 0.0, "description": ""}, 
+		{"id": 6, "name": "Essay 1", "assignment_group_id": 2, "points_possible": 10.0, "description": "<p>This is a test for an assignment group and trying to understand it.</p>"}, 
+		{"id": 7, "name": "Essay 2", "assignment_group_id": 2, "points_possible": 30.0, "description": "<p>Another Test Group Assignment</p>"}, 
+		{"id": 8, "name": "In-Class Activity #1", "assignment_group_id": 2, "points_possible": 20.0, "description": "<p>This assignment will be very difficult and most students will not be able to complete it.</p>"}
+	],
+	"assignment_submissions": [
+		{"assignment_id": 1, "user_id": 1, "course": null, "attempt": null, "submitted_at": null, "missing": true, "late": false, "preview_url": "https://uw.beta.instructure.com/courses/1521081/assignments/7047338/submissions/4221108?preview=1&version=0"}, 
+		{"assignment_id": 1, "user_id": 2, "course": null, "attempt": null, "submitted_at": null, "missing": true, "late": false, "preview_url": "https://uw.beta.instructure.com/courses/1521081/assignments/7047338/submissions/4221713?preview=1&version=0"}, 
+		{"assignment_id": 1, "user_id": 3, "course": null, "attempt": null, "submitted_at": null, "missing": true, "late": false, "preview_url": "https://uw.beta.instructure.com/courses/1521081/assignments/7047338/submissions/4340680?preview=1&version=0"}
+	],
+	"quiz": [
+		{"id": 1, "title": "Quiz 1", "html_url": "https://uw.beta.instructure.com/courses/1521081/quizzes/1617705", "allowed_attempts": -1, "question_count": 2, "points_possible": 2.0}
+	],
+	"quiz_submissions": [
+		{"id": 1, "quiz_id": 1, "user_id": 1, "submission_id": 1, "score": 2.0, "attempt": 1, "quiz_points_possible": 2.0, "time_spent": 4, "html_url": "https://uw.beta.instructure.com/courses/1521081/quizzes/1617705/submissions/24616647"}, 
+		{"id": 2, "quiz_id": 1, "user_id": 2, "submission_id": 2, "score": 2.0, "attempt": 2, "quiz_points_possible": 2.0, "time_spent": 6, "html_url": "https://uw.beta.instructure.com/courses/1521081/quizzes/1617705/submissions/28969870"}
+	],
+	"settings": {
+		"allow_final_grade_override": false, 
+		"allow_student_discussion_topics": true, 
+		"allow_student_forum_attachments": true, 
+		"allow_student_discussion_editing": true, 
+		"allow_student_discussion_reporting": true, 
+		"allow_student_organized_groups": true, 
+		"syllabus_course_summary": true, 
+		"homeroom_course": true,
+		"course_color": "red",  
+		"default_due_time": "23:59:59"
+	},
+	"tabs": [
+		{"id": "home", "html_url": "/courses/1", "position": 1, "visibility": "public", "label": "Home", "course_id": 1}, 
+		{"id": "announcements", "html_url": "/courses/1/announcements", "position": 2, "hidden": true, "visibility": "admins", "label": "Announcements", "course_id": 1}, 
+		{"id": "pages", "html_url": "/courses/1/wiki", "position": 3, "visibility": "public", "label": "Pages", "course_id": 1}
+	],
+	"export_students_default": [
+		{"id": 1, "name": "Billy Bob"}, 
+		{"id": 2, "name": "Curly Sue"}, 
+		{"id": 3, "name": "Rocky Road"}
+	],
+	"export_students_key": [
+		{"id": 1, "email": "bbob@uw.fake"}, 
+		{"id": 2, "email": "csue@uw.fake"}, 
+		{"id": 3, "email": "rroad@uw.fake"}
+	],
+	"get_groups_list": [
+		{"name": "Group 1", "id": 1}, 
+		{"name": "Group 2", "id": 2}, 
+		{"name": "Group 3", "id": 3}, 
+		{"name": "Group 4", "id": 4}
+	],
+	"export_groups_json":{
+		"Group 1": [
+			{"id": 1, "name": "Billy Bob"}, 
+			{"id": 2, "name": "Curly Sue"}
+		], 
+		"Group 2": [{"id": 3, "name": "Rocky Road"}], 
+		"Group 3": [
+			{"id": 1, "name": "Billy Bob"}, 
+			{"id": 3, "name": "Rocky Road"}
+		], 
+		"Group 4": [{"id": 1, "name": "Billy Bob"}]
+	},
+	"get_folders_list": [
+		{"name": "course files", "id": 1}, 
+		{"name": "course files/Folder 1", "id": 2}, 
+		{"name": "course files/Folder 1/SubFolder 1", "id": 3}, 
+		{"name": "course files/Folder2", "id": 4}
+	],
+	"get_quiz_list": [
+		{"name": "Quiz 1", "id": 1}
+	],
+	"import_settings_json": {
+		"courseId": 1,
+		"settingsFile": "Tests/resources/mock-Settings.json",
+		"navFile": "Tests/resources/mock-Navigation.json"
+	}
+}
