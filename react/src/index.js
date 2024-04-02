@@ -6,11 +6,10 @@ import Welcome from './pages/Welcome.js';
 
 ReactDOM.render(
   <React.StrictMode>
-    <Dashboard /> 
+    <Dashboard />
   </React.StrictMode>,
-  document.getElementById('root') 
+  document.getElementById('root')
 );
 
-ReactDOM.render(<React.StrictMode><Welcome /></React.StrictMode>,document.getElementById('page'));
 
 

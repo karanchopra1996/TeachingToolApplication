@@ -33,11 +33,11 @@ canvas_base_url = "https://canvas.uw.edu/api/v1/"
 
 app = Flask(__name__)
 
+
 app.config['SESSION_TYPE'] = 'filesystem'  # Use server-side sessions
 app.config['SECRET_KEY'] = '12345'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=2)
 Session(app)
-
   # Initialize sessions
 
 # -----------------SWAGGER CONFIGURATIONS------------------------------------------------------------------------------
@@ -52,6 +52,7 @@ swagger_blue_print = get_swaggerui_blueprint(
 )
 app.register_blueprint(swagger_blue_print, url_prefix=swagger_url)
 
+CORS(app)
 
 def get_canvas_instance():
     login_method = os.getenv('LOGIN_METHOD')
@@ -79,7 +80,12 @@ def hello_world():
         return "Please login using OAuth"  # You can provide HTML templates for a login button here
     else:
         # Continue with your app logic
+        app.logger.info(os.getenv('LOGIN_METHOD'))
         return {"Selene": "Selene"}
+
+
+
+
 # -----------------------------------Canvas OAuth 2.0 Routes------------------------------------------------------------
 
 client_id = os.getenv('CLIENT_ID')
@@ -98,8 +104,6 @@ def clear_session_endpoint():
     flask_session.pop('refresh_token', None)
     flask_session.pop('token_expiry', None)
     return jsonify({"message": "Session cleared successfully"}), 200
-
-
 
 
 @app.route('/api/authorization-code', methods=['POST'])
@@ -1036,35 +1040,28 @@ def getCourseNamesAndID():
     courseNames = canvas.getCourseNamesID()
     return jsonify(response=courseNames)
 # ------------------------------------------------------------------------------
-if __name__ == "__main__":
- app.run(debug=True)  
-#------------------------------------------------------------------------------------------------------------------------
+
 #-------------AUTHOR: Karan Chopra--------QTI import/export quiz Management-----------------------------------------------------
 
 # Used for import the quiz in the QTI format.
- 
 @app.route('/importQTIQuiz', methods=['POST'])
 def importQTIQuiz():
-    """ Import a QTI formatted quiz into a specified course """
-    # Flask doesn't support direct JSON and files together very well in request;
-    # hence, we're using form data to get course options and file separately
-    courseOption = request.form.get('courseOption')
-    quizType = request.form.get('quizType')
+    #getting the file and the quiz name from the request along with the courseId 
     courseId = request.form.get('courseId')
-    file = request.files.get('file')
-
-    if not file:
-        return jsonify({"error": "No file provided"}), 400
-
+    quizName = request.form.get('quizName')
+    if 'file' not in request.files:
+        return 'No file selected!' 
+    file = request.files['file']
+    if file.filename == '':
+        return 'No file selected!'
     canvas = get_canvas_instance()
-    if canvas is None:
-        return jsonify({"error": "Not authenticated"}), 401
+    #this function below will convert our file into Qti format and then call the canvas API
+    result = canvas.importQuizFromQTI(courseId,file,quizName)
+    #result the status of the quiz import SUCCESS or FAILURE
+    return (result)
 
-    result = canvas.importQuizFromQTI(courseId, file, courseOption, quizType)
-    if result == 'success':
-        return jsonify(message="QTI Quiz imported successfully", status_code=200)
-    else:
-        return jsonify(message="Failed to import QTI Quiz", status_code=500)
+if __name__ == "__main__":
+ app.run(debug=True)  
   #------------------------------------------------------------------------------------------------------------------------------------
       
 # Used for export the quiz in the QTI format.

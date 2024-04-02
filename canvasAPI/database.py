@@ -4,7 +4,7 @@ import json
 from mysql.connector import Error
 
 # DB connection
-f = open("/Users/karanc4/teaching-tools/canvasAPI/db_credentials.json")
+f = open("/home/parvsehgal/Desktop/free/TeachingToolApplication/canvasAPI/db_credentials.json")
 credentials = json.load(f)
 f.close()
 
