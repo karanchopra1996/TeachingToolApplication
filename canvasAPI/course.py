@@ -6,10 +6,35 @@ from .util import combine_kwargs
 import requests
 from canvasapi import Canvas
 import os
+import xml.etree.ElementTree as ET
+
+
+def generate_qti_xml(questions):
+    root = ET.Element(
+        "assessment",
+        {
+            "xmlns": "http://www.imsglobal.org/xsd/imsqti_v2p1",
+            "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+            "xsi:schemaLocation": "http://www.imsglobal.org/xsd/imsqti_v2p1 ims_qti_v2p1.xsd",
+        },
+    )
+    for index, question in enumerate(questions):
+        item = ET.SubElement(root, "item", {"ident": f"item_{index+1}"})
+        itemmetadata = ET.SubElement(item, "itemmetadata")
+        title = ET.SubElement(itemmetadata, "title")
+        title.text = question.question_name
+        presentation = ET.SubElement(item, "presentation")
+        response_str = ""
+        for index, answer in enumerate(question.answers):
+            response_str += f'{chr(65 + index)}. {answer["text"]}\n'
+        material = ET.SubElement(presentation, "material")
+        materialtext = ET.SubElement(material, "materialtext")
+        materialtext.text = response_str
+
+    return ET.tostring(root, encoding="utf-8", method="xml")
 
 
 class Course(CanvasObject):
-
     # def get_course(self, course_id, **kwargs):
     #    """
     #    Retrieve a course by its ID.
@@ -704,16 +729,33 @@ class Course(CanvasObject):
         )
         return response
 
-    # ------------------------------------AUTHOR -
+    # ------------------------------------AUTHOR : Karan Chopran
 
     def import_qti_quiz(self, courseId, quizName, qti_content):
-        API_URL = "https://canvas.uw.edu/api/v1/"
-        course = canvas.get_course(course_id)
+        API_URL = "https://canvas.uw.edu"
+        course = Canvas.get_course(courseId)
         # Create the quiz
-        quiz = course.create_quiz(quiz={"title": quiz_name})
+        quiz = course.create_quiz(quiz={"title": quizName})
         # Upload QTI content to the quiz
-        url = f"{API_URL}/api/v1/courses/{course_id}/quizzes/{quiz.id}/content/qti"
+        url = f"{API_URL}/api/v1/courses/{courseId}/quizzes/{quiz.id}/content/qti"
         API_KEY = os.getenv("CANVAS_ACCESS_TOKEN")
         headers = {"Authorization": f"Bearer {API_KEY}"}
         files = {"attachment": ("qti_content.zip", qti_content, "application/zip")}
         response = requests.post(url, headers=headers, files=files)
+        return response
+
+    def export_qti_quiz(self, courseId, quizId):
+        API_URL = "https://canvas.uw.edu"
+        API_KEY = os.getenv("CANVAS_ACCESS_TOKEN")
+        canvas = Canvas(API_URL, API_KEY)
+        # get course from id
+        course = canvas.get_course(courseId)
+        # get the quiz
+        quiz = course.get_quiz(quizId)
+        questions = quiz.get_questions()
+        # convert the quiz in a QTI format
+        qti_xml = generate_qti_xml(questions)
+        # write the file to machine
+        with open(f"quiz_{quizId}.xml", "wb") as file:
+            file.write(qti_xml)
+        return "inside canvas api function"
