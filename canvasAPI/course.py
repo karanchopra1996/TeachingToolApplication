@@ -758,4 +758,4 @@ class Course(CanvasObject):
         # write the file to machine
         with open(f"quiz_{quizId}.xml", "wb") as file:
             file.write(qti_xml)
-        return "inside canvas api function"
+        return {"response": "quiz saved to machine"}
