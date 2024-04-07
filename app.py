@@ -1008,7 +1008,7 @@ def getSubmitterData():
 @app.route("/uploadSubmissionFiles", methods=["GET", "POST"])
 def uploadSubmissionFiles():
     if request.method == "POST":
-        """ uploads files to the canvas local storage that is then used for submission """
+        """uploads files to the canvas local storage that is then used for submission"""
         file = request.files["file"]
         canvas = get_canvas_instance()
         if canvas is None:
@@ -1022,7 +1022,7 @@ def uploadSubmissionFiles():
 @app.route("/submitAssignment", methods=["GET", "POST"])
 def submitAssignment():
     if request.method == "POST":
-        """ Submission an assignmnet to the canvas  """
+        """Submission an assignmnet to the canvas"""
         request_json = request.get_json(force=True)
 
         canvas = get_canvas_instance()
@@ -1128,6 +1128,15 @@ def exportQTIQuiz():
         return {"error": "no quiz selected"}
     canvas = get_canvas_instance()
     result = canvas.export_QTIQuiz(quizId, courseId)
+    return result
+
+
+@app.route("/exportAllQTI", methods=["POST"])
+def exportAllQTI():
+    # get the course id
+    courseId = request.form.get("courseId")
+    canvas = get_canvas_instance()
+    result = canvas.exportEveryQti(courseId)
     return result
 
 

@@ -1,3 +1,4 @@
+from logging import exception
 from .canvas_object import CanvasObject
 from .paginated_list import PaginatedList
 from .exceptions import RequiredFieldMissing
@@ -32,6 +33,14 @@ def generate_qti_xml(questions):
         materialtext.text = response_str
 
     return ET.tostring(root, encoding="utf-8", method="xml")
+
+    def canvas_api_get(endpoint, params=None):
+        API_URL = "https://your_canvas_instance/api/v1"
+        ACCESS_TOKEN = os.getenv("CANVAS_ACCESS_TOKEN")
+        headers = {"Authorization": "Bearer " + ACCESS_TOKEN}
+        response = requests.get(API_URL + endpoint, headers=headers, params=params)
+        response.raise_for_status()
+        return response.json()
 
 
 class Course(CanvasObject):
@@ -729,33 +738,63 @@ class Course(CanvasObject):
         )
         return response
 
-    # ------------------------------------AUTHOR : Karan Chopran
+    # ------------------------------------AUTHOR : Karan Chopra
 
     def import_qti_quiz(self, courseId, quizName, qti_content):
         API_URL = "https://canvas.uw.edu"
-        course = Canvas.get_course(courseId)
+        API_KEY = os.getenv("CANVAS_ACCESS_TOKEN")
+        canvas = Canvas(API_URL, API_KEY)
+        course = canvas.get_course(courseId)
+        return {"ourCourse": course}
         # Create the quiz
         quiz = course.create_quiz(quiz={"title": quizName})
         # Upload QTI content to the quiz
         url = f"{API_URL}/api/v1/courses/{courseId}/quizzes/{quiz.id}/content/qti"
-        API_KEY = os.getenv("CANVAS_ACCESS_TOKEN")
         headers = {"Authorization": f"Bearer {API_KEY}"}
         files = {"attachment": ("qti_content.zip", qti_content, "application/zip")}
         response = requests.post(url, headers=headers, files=files)
         return response
+
+    def export_All_Qti(self, courseId):
+        # Get list of quizzes in the course
+        quizzes = canvas_api_get(f"/courses/{courseId}/quizzes")
+        # Create a directory to store downloaded quizzes
+        os.makedirs("quizzes", exist_ok=True)
+        try:
+            for quiz in quizzes:
+                # Get quiz details
+                quiz_id = quiz["id"]
+                quiz_name = quiz["title"]
+                # Export quiz content in QTI format
+                export_url = f"/courses/{courseId}/quizzes/{quiz_id}/content_export"
+                export_response = canvas_api_get(
+                    export_url, params={"export_type": "qti"}
+                )
+
+            with ZipFile(BytesIO(export_response), "r") as zip_file:
+                # Extract the QTI file from the ZIP archive
+                qti_file = zip_file.extract(f"{quiz_name}.zip", "quizzes")
+                os.rename(qti_file, os.path.join("quizzes", f"{quiz_name}.zip"))
+
+            return {"status": "ok"}
+        except Exception as e:
+            return {"error": e}
 
     def export_qti_quiz(self, courseId, quizId):
         API_URL = "https://canvas.uw.edu"
         API_KEY = os.getenv("CANVAS_ACCESS_TOKEN")
         canvas = Canvas(API_URL, API_KEY)
         # get course from id
-        course = canvas.get_course(courseId)
-        # get the quiz
-        quiz = course.get_quiz(quizId)
-        questions = quiz.get_questions()
-        # convert the quiz in a QTI format
-        qti_xml = generate_qti_xml(questions)
-        # write the file to machine
-        with open(f"quiz_{quizId}.xml", "wb") as file:
-            file.write(qti_xml)
-        return {"response": "quiz saved to machine"}
+        try:
+            course = canvas.get_course(courseId)
+            # get the quiz
+            quiz = course.get_quiz(quizId)
+            questions = quiz.get_questions()
+            # convert the quiz in a QTI format
+            qti_xml = generate_qti_xml(questions)
+            # write the file to machine
+            with open(f"quiz_{quizId}.xml", "wb") as file:
+                file.write(qti_xml)
+            return {"response": "quiz saved to machine"}
+        except Exception as e:
+            return {"error": e}

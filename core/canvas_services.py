@@ -532,8 +532,14 @@ class canvas_services:
         result = self.canvasapi.course.import_qti_quiz(courseId, quizName, qti_content)
         return result
 
+    # downloads a QTI quiz froma course
     def export_QTIQuiz(self, quizId, courseId):
         result = self.canvasapi.course.export_qti_quiz(courseId, quizId)
+        return result
+
+    # downloads all quiz from a course
+    def exportEveryQti(self, courseId):
+        result = self.canvasapi.course.export_All_Qti(courseId)
         return result
 
     def exportQuizzesToQTI(self, courseId, courseOption, quizType):

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "@mui/material/Button";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
@@ -13,18 +13,57 @@ function QTIQuizManager({ courseId }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [statusMessage, setStatusMessage] = useState("");
 
-  //
-  const makecall = async () => {
-    const data = {
-      course: "testCourse",
-    };
-    console.log("hi");
-    const response = await fetch("http://127.0.0.1:5000/importQTIQuiz", {
-      method: "POST",
-      body: data,
-    });
+  // for import function 
+  const [quizName, setQuizName] = useState("");
+
+  //for export function 
+  const [choosenQuiz, setChoosenQuiz] = useState('')
+  const [QuizList, setQuizList] = useState([])
+
+  //get quizes list to choose which one to export 
+  useEffect(() => {
+    setQuizList([])
+    fetch("/listQuizzes", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        "courseID": courseId,
+      })
+    })
+      .then(response => response.json()).then(data => {
+        setQuizList(data.response)
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courseId.courseId])
+
+  //gets Quiz and a name of the quiz to be create from the user throuh form and calls the api made in app.py 
+  const importQTIQuiz = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("quizName", quizName);
+      formData.append("courseId", courseId);
+      const options = {
+        method: "POST",
+        body: formData,
+      };
+      const response = await fetch(
+        "http://127.0.0.1:5000/importQTIQuiz",
+        options
+      );
+      const result = await response.json();
+      console.log(result);
+    } catch (err) {
+      console.log(err.message);
+    }
   };
-  //
+
+  const handleChange = (event) => {
+    setQuizName(event.target.value);
+  };
+
   const handleScreenChange = (screen) => {
     setScreenToShow(screen);
     setStatusMessage(""); // Reset status message when changing screens
@@ -36,50 +75,51 @@ function QTIQuizManager({ courseId }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setStatusMessage(`${screenToShow.toUpperCase()} in progress...`);
+    console.log(quizName);
+    console.log(selectedFile);
+    importQTIQuiz();
+  };
 
-    let url = "";
-    let options = {};
-
-    if (screenToShow === "import") {
-      url = "/importQTIQuiz";
+  const exportQuiz = async (event) => {
+    event.preventDefault();
+    console.log(choosenQuiz)
+    try {
       const formData = new FormData();
-      formData.append("file", selectedFile);
-      formData.append("courseOption", courseOption);
-      formData.append("quizType", quizType);
-      formData.append("courseId", courseId.courseId.toString());
-
-      options = {
+      formData.append("quizId", choosenQuiz);
+      formData.append("courseId", courseId);
+      const options = {
         method: "POST",
         body: formData,
       };
-    } else if (screenToShow === "export") {
-      url = "/exportQTIQuiz";
-      options = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          courseOption: courseOption,
-          quizType: quizType,
-          courseId: courseId.courseId.toString(),
-        }),
-      };
+      const response = await fetch(
+        "http://127.0.0.1:5000/exportQTIQuiz",
+        options
+      );
+      const result = await response.json();
+      console.log(result);
+    } catch (err) {
+      console.log(err.message);
     }
+  }
 
-    await fetch(url, options)
-      .then((response) => response.json())
-      .then((data) => {
-        setStatusMessage(data.message);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        setStatusMessage(`Failed to ${screenToShow} quiz.`);
-      });
-
-    // Optional: Reset form state here if needed
-  };
+  const exportAllQuizzes = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("courseId", courseId);
+      const options = {
+        method: "POST",
+        body: formData,
+      };
+      const response = await fetch(
+        "http://127.0.0.1:5000/exportAllQTI",
+        options
+      );
+      const result = await response.json();
+      console.log(result);
+    } catch (err) {
+      console.log(err.message);
+    }
+  }
 
   return (
     <div align="center">
@@ -103,25 +143,49 @@ function QTIQuizManager({ courseId }) {
           </Button>
         </>
       )}
-      {(screenToShow === "import" || screenToShow === "export") && (
+      {(screenToShow === "import") && (
         <>
           <h1>QTI work</h1>
-          <form>
-            <div>
-              <label htmlFor="fileInput">Choose a file:</label>
-              <input type="file" id="fileInput" accept=".txt" />
-            </div>
-            <div>
-              <label htmlFor="optionSelect">Type</label>
-              <select id="optionSelect">
-                <option value="option1">QTI</option>
-              </select>
-            </div>
-            <button type="submit">IMPORT</button>
+          <form onSubmit={handleSubmit}>
+            <label>
+              Quiz Name
+              <input type="text" name="text" onChange={handleChange} />
+            </label>
+            <label>
+              choose quiz
+              <input type="file" name="file" onChange={handleFileChange} />
+            </label>
+            <button type="submit">Submit</button>
           </form>
         </>
       )}
-    </div>
+      {(screenToShow === "export") && (
+        <>
+          <form>
+            <InputLabel id="demo-multiple-name-label">Select Quiz</InputLabel>
+            <Select
+              labelId="demo-multiple-name-label"
+              id="demo-multiple-name"
+              defaultValue='None'
+              value={choosenQuiz}
+              onChange={(event) => setChoosenQuiz(event.target.value)}
+            >
+              {QuizList.map(quiz => (
+                <MenuItem
+                  key={quiz.name}
+                  value={quiz.id}
+                >
+                  {quiz.name}
+                </MenuItem>
+              ))}
+            </Select>
+            <button onClick={exportQuiz}>Export selected Quiz</button>
+          </form>
+          <button onClick={exportAllQuizzes}>export every Quiz</button>
+        </>
+      )
+      }
+    </div >
   );
 }
 
