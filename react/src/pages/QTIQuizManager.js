@@ -5,6 +5,7 @@ import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
+import { display } from "@mui/system";
 
 function QTIQuizManager({ courseId }) {
   const [screenToShow, setScreenToShow] = useState("");
@@ -121,6 +122,14 @@ function QTIQuizManager({ courseId }) {
     }
   }
 
+  const containerStyle = {
+    marginTop: "100px",
+  }
+
+  const labelStyle = {
+    marginLeft: "15px"
+  }
+
   return (
     <div align="center">
       {screenToShow === "" && (
@@ -145,43 +154,83 @@ function QTIQuizManager({ courseId }) {
       )}
       {(screenToShow === "import") && (
         <>
-          <h1>QTI work</h1>
-          <form onSubmit={handleSubmit}>
-            <label>
-              Quiz Name
-              <input type="text" name="text" onChange={handleChange} />
-            </label>
-            <label>
-              choose quiz
-              <input type="file" name="file" onChange={handleFileChange} />
-            </label>
-            <button type="submit">Submit</button>
-          </form>
+          <div style={containerStyle}>
+            <h1>Import Quiz in Qti Format</h1>
+            <form onSubmit={handleSubmit}>
+              <label>
+                Quiz Name
+                <input type="text" name="text" onChange={handleChange} />
+              </label>
+              <label style={labelStyle}>
+                choose quiz
+                <input type="file" name="file" onChange={handleFileChange} />
+              </label>
+              <Button
+                variant="contained"
+                color="primary"
+                type="submit"
+              >
+                IMPORT
+              </Button>
+            </form>
+            <Button
+              variant="contained"
+              color="error"
+              type="submit"
+              onClick={() => setScreenToShow('')}
+            >
+              back
+            </Button>
+          </div>
         </>
       )}
       {(screenToShow === "export") && (
         <>
-          <form>
-            <InputLabel id="demo-multiple-name-label">Select Quiz</InputLabel>
-            <Select
-              labelId="demo-multiple-name-label"
-              id="demo-multiple-name"
-              defaultValue='None'
-              value={choosenQuiz}
-              onChange={(event) => setChoosenQuiz(event.target.value)}
+          <div style={containerStyle}>
+            <h1>export Quiz in Qti format</h1>
+            <form>
+              <label>Select Quiz</label>
+              <Select
+                labelId="demo-multiple-name-label"
+                id="demo-multiple-name"
+                defaultValue='None'
+                value={choosenQuiz}
+                onChange={(event) => setChoosenQuiz(event.target.value)}
+              >
+                {QuizList.map(quiz => (
+                  <MenuItem
+                    key={quiz.name}
+                    value={quiz.id}
+                  >
+                    {quiz.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              <Button
+                variant="contained"
+                color="secondary"
+                style={{ marginLeft: "10px" }}
+                onClick={exportQuiz}
+              >
+                Export selected Quiz
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                style={{ marginLeft: "10px" }}
+                onClick={exportAllQuizzes}
+              >
+                Export every Quiz
+              </Button>
+            </form>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => setScreenToShow('')}
             >
-              {QuizList.map(quiz => (
-                <MenuItem
-                  key={quiz.name}
-                  value={quiz.id}
-                >
-                  {quiz.name}
-                </MenuItem>
-              ))}
-            </Select>
-            <button onClick={exportQuiz}>Export selected Quiz</button>
-          </form>
-          <button onClick={exportAllQuizzes}>export every Quiz</button>
+              BACK
+            </Button>
+          </div>
         </>
       )
       }

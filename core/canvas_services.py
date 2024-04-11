@@ -529,8 +529,8 @@ class canvas_services:
         text_content = file.read().decode("utf-8")
         qti_content = generate_qti_quiz(text_content)
         # this will add the qti file as a new quiz
-        result = self.canvasapi.course.import_qti_quiz(courseId, quizName, qti_content)
-        return result
+        # result = self.canvasapi.course.import_qti_quiz(courseId, quizName, qti_content)
+        return qti_content
 
     # downloads a QTI quiz froma course
     def export_QTIQuiz(self, quizId, courseId):
@@ -541,26 +541,6 @@ class canvas_services:
     def exportEveryQti(self, courseId):
         result = self.canvasapi.course.export_All_Qti(courseId)
         return result
-
-    def exportQuizzesToQTI(self, courseId, courseOption, quizType):
-        """Export quizzes in QTI format from a specified course.
-        This is a highly simplified placeholder.
-        Actual implementation would depend on how your system stores
-        quizzes and how they can be converted to QTI format.
-        """
-        quizzes = self.getQuizzesData(
-            courseId, courseOption=courseOption, quizType=quizType
-        )
-        if not quizzes:
-            return "failure"
-
-        # Assume a function exists to convert quizzes to QTI and save/export them
-        result = self.canvasapi.course.convert_quizzes_to_qti_and_export(quizzes)
-
-        if result == "success":
-            return "success"
-        else:
-            return "failure"
 
     # ---SETTINGS---------------------------------------------------------------
 
