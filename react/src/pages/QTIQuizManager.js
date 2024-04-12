@@ -131,7 +131,7 @@ function QTIQuizManager({ courseId }) {
             style={{
               color: "#4a2e83",
             }}
-          >In this function we Import a Quiz in Qti format</p>
+          >In this function we Import/Export Quiz in Qti format</p>
 
           <Button
             variant="contained"
