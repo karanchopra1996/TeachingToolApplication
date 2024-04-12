@@ -122,14 +122,6 @@ function QTIQuizManager({ courseId }) {
     }
   }
 
-  const containerStyle = {
-    marginTop: "100px",
-  }
-
-  const labelStyle = {
-    marginLeft: "15px"
-  }
-
   return (
     <div align="center">
       {screenToShow === "" && (
@@ -154,21 +146,54 @@ function QTIQuizManager({ courseId }) {
       )}
       {(screenToShow === "import") && (
         <>
-          <div style={containerStyle}>
-            <h1>Import Quiz in Qti Format</h1>
-            <form onSubmit={handleSubmit}>
-              <label>
+          <div>
+            <h1 style={{ paddingTop: "60px", fontSize: 60, color: "#4A2E83" }}>Import Quiz In Qti Format</h1>
+            <p
+              style={{
+                color: "#4a2e83",
+              }}
+            >In this function we Import a Quiz in Qti format</p>
+            <form
+              style={{
+                display: "flex",
+                flexDirection: "column"
+              }}
+              onSubmit={handleSubmit}>
+              <label
+                style={{
+                  color: "#4a2e83",
+                  marginBottom: "15px",
+                  fontWeight: "700"
+                }}
+              >
                 Quiz Name
-                <input type="text" name="text" onChange={handleChange} />
+                <input type="text"
+                  style={{ marginLeft: "15px" }}
+                  name="text" onChange={handleChange} />
               </label>
-              <label style={labelStyle}>
+              <label style={{
+                color: "#4A2E83",
+                marginLeft: "70px",
+                fontWeight: "700"
+              }}>
                 choose quiz
-                <input type="file" name="file" onChange={handleFileChange} />
+                <input type="file"
+                  style={{
+                    marginLeft: "15px"
+                  }}
+                  name="file" onChange={handleFileChange} />
               </label>
               <Button
                 variant="contained"
                 color="primary"
                 type="submit"
+                style={{
+                  backgroundColor: "#4A2E83",
+                  height: "40px", width: "300px",
+                  marginLeft: "37%",
+                  marginTop: "15px",
+                  marginBottom: "15px"
+                }}
               >
                 IMPORT
               </Button>
@@ -183,56 +208,77 @@ function QTIQuizManager({ courseId }) {
             </Button>
           </div>
         </>
-      )}
-      {(screenToShow === "export") && (
-        <>
-          <div style={containerStyle}>
-            <h1>export Quiz in Qti format</h1>
-            <form>
-              <label>Select Quiz</label>
-              <Select
-                labelId="demo-multiple-name-label"
-                id="demo-multiple-name"
-                defaultValue='None'
-                value={choosenQuiz}
-                onChange={(event) => setChoosenQuiz(event.target.value)}
-              >
-                {QuizList.map(quiz => (
-                  <MenuItem
-                    key={quiz.name}
-                    value={quiz.id}
-                  >
-                    {quiz.name}
-                  </MenuItem>
-                ))}
-              </Select>
-              <Button
-                variant="contained"
-                color="secondary"
-                style={{ marginLeft: "10px" }}
-                onClick={exportQuiz}
-              >
-                Export selected Quiz
-              </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                style={{ marginLeft: "10px" }}
-                onClick={exportAllQuizzes}
-              >
-                Export every Quiz
-              </Button>
-            </form>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={() => setScreenToShow('')}
-            >
-              BACK
-            </Button>
-          </div>
-        </>
       )
+      }
+      {
+        (screenToShow === "export") && (
+          <>
+            <div>
+              <h1 style={{ paddingTop: "60px", fontSize: 60, color: "#4A2E83" }}>Export Quiz In Qti Format</h1>
+              <form style={{ display: "flex", flexDirection: "column" }}>
+                <label
+                  style={{
+                    marginBottom: "15px",
+                    color: "#4A2E83"
+                  }}
+                >In this function, please select the Quiz from the dropdown that you'd like to export in Qti format</label>
+                <Select
+                  labelId="demo-multiple-name-label"
+                  id="demo-multiple-name"
+                  defaultValue='None'
+                  value={choosenQuiz}
+                  style={{
+                    height: "40px", width: "300px",
+                    marginLeft: "37%"
+                  }}
+                  onChange={(event) => setChoosenQuiz(event.target.value)}
+                >
+                  {QuizList.map(quiz => (
+                    <MenuItem
+                      key={quiz.name}
+                      value={quiz.id}
+                    >
+                      {quiz.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <Button
+                  variant="contained"
+                  style={{
+                    marginLeft: "37%",
+                    marginBottom: "25px",
+                    marginTop: "25px",
+                    height: "40px", width: "300px",
+                    backgroundColor: "#4A2E83"
+                  }}
+                  onClick={exportQuiz}
+                >
+                  Export selected Quiz
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  style={{
+                    marginLeft: "37%",
+                    marginBottom: "25px",
+                    height: "40px", width: "300px",
+                    backgroundColor: "#4A2E83"
+                  }}
+                  onClick={exportAllQuizzes}
+                >
+                  Export every Quiz
+                </Button>
+              </form>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={() => setScreenToShow('')}
+              >
+                BACK
+              </Button>
+            </div>
+          </>
+        )
       }
     </div >
   );
