@@ -126,10 +126,20 @@ function QTIQuizManager({ courseId }) {
     <div align="center">
       {screenToShow === "" && (
         <>
-          <h1>QTI Quiz Manager</h1>
+          <h1 style={{ paddingTop: "60px", fontSize: 60, color: "#4A2E83" }}>Qti Quiz Manager</h1>
+          <p
+            style={{
+              color: "#4a2e83",
+            }}
+          >In this function we Import a Quiz in Qti format</p>
+
           <Button
             variant="contained"
             color="primary"
+            style={{
+              backgroundColor: "#4A2E83",
+              height: "40px", width: "150px",
+            }}
             onClick={() => handleScreenChange("import")}
           >
             IMPORT
@@ -138,7 +148,11 @@ function QTIQuizManager({ courseId }) {
             variant="contained"
             color="secondary"
             onClick={() => handleScreenChange("export")}
-            style={{ marginLeft: "10px" }}
+            style={{
+              marginLeft: "10px",
+              backgroundColor: "#4A2E83",
+              height: "40px", width: "150px",
+            }}
           >
             EXPORT
           </Button>
