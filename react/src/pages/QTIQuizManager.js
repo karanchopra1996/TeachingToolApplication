@@ -50,12 +50,17 @@ function QTIQuizManager({ courseId }) {
         method: "POST",
         body: formData,
       };
+      setStatusMessage("Creating the Quiz")
       const response = await fetch(
         "http://127.0.0.1:5000/importQTIQuiz",
         options
       );
       const result = await response.json();
       console.log(result);
+      setStatusMessage('created Quiz Sucessfully')
+      setTimeout(() => {
+        setStatusMessage("")
+      }, 3000)
     } catch (err) {
       console.log(err.message);
     }
@@ -131,7 +136,7 @@ function QTIQuizManager({ courseId }) {
             style={{
               color: "#4a2e83",
             }}
-          >In this function we Import/Export Quiz in Qti format</p>
+          >In this function we Import/Export a Quiz in Qti format</p>
 
           <Button
             variant="contained"
@@ -294,6 +299,10 @@ function QTIQuizManager({ courseId }) {
           </>
         )
       }
+      {(true) ? (<div>
+        <p style={{ margin: "20px", position: "relative", justifyContent: "center", alignItems: "center", color: "#4A2E83", fontSize: 40 }}>{statusMessage}</p>
+      </div>
+      ) : (<div>testing again</div>)}
     </div >
   );
 }
