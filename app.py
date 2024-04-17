@@ -1107,14 +1107,14 @@ def importQTIQuiz():
     # getting the file and the quiz name from the request along with the courseId
     courseId = request.form.get("courseId")
     quizName = request.form.get("quizName")
-    if "file" not in request.files:
-        return "No file selected!"
-    file = request.files["file"]
-    if file.filename == "":
-        return "No file selected!"
+    # if "file" not in request.files:
+    #   return "No file selected!"
+    # file = request.files["file"]
+    # if file.filename == "":
+    # return "No file selected!"
     canvas = get_canvas_instance()
     # this function below will convert our file into Qti format and then call the canvas API
-    result = canvas.importQuizFromQTI(courseId, file, quizName)
+    result = canvas.importQuizFromQTI(courseId, quizName)
     # result the status of the quiz import SUCCESS or FAILURE
     return result
 
@@ -1138,6 +1138,29 @@ def exportAllQTI():
     canvas = get_canvas_instance()
     result = canvas.exportEveryQti(courseId)
     return result
+
+
+@app.route("/testing", methods=["POST"])
+def testing():
+    payload = {
+        "question": {
+            "question_name": "API question",
+            "question_text": "Testing for options",
+            "question_type": "multiple_choice_question",
+            "points_possible": "4",
+        }
+    }
+    headers = {
+        "Authorization": "Bearer 10~dVERK37nMXapiXX17crpLcI5jJhufVIAnEw2MacMgxR8nnuGwo8xaGVz3Lm8VSRW"
+    }
+
+    result = requests.post(
+        "https://canvas.uw.edu/api/v1/courses/1521081/quizzes/2030074/questions",
+        json=payload,
+        headers=headers,
+    )
+    ans = result.json()
+    return {"result": ans}
 
 
 if __name__ == "__main__":
