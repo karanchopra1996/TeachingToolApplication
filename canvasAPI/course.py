@@ -746,15 +746,6 @@ class Course(CanvasObject):
         payload = {
             "quiz": {
                 "title": "{}".format(quizName),  # Replace with your quiz title
-                # Other quiz content goes here
-                "content": {
-                    "question_1": {
-                        "question": "What is the chemical symbol for water?",
-                        "options": ["H2O", "CO2", "NaCl", "O2"],
-                        "answer": "H2O",
-                    },
-                    # Include other questions and answers here
-                },
             }
         }
 
