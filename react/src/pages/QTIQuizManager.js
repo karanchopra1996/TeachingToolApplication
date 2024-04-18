@@ -97,12 +97,17 @@ function QTIQuizManager({ courseId }) {
         method: "POST",
         body: formData,
       };
+      setStatusMessage("Downloading The Selected Quiz")
       const response = await fetch(
         "http://127.0.0.1:5000/exportQTIQuiz",
         options
       );
       const result = await response.json();
       console.log(result);
+      setStatusMessage('Quiz Downloaded')
+      setTimeout(() => {
+        setStatusMessage('')
+      }, 3000)
     } catch (err) {
       console.log(err.message);
     }
