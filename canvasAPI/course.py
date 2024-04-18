@@ -765,4 +765,25 @@ class Course(CanvasObject):
         return {"in canvas api function"}
 
     def export_qti_quiz(self, courseId, quizId):
-        return {"in canvas api function"}
+        headers = {
+            "Authorization": "Bearer 10~dVERK37nMXapiXX17crpLcI5jJhufVIAnEw2MacMgxR8nnuGwo8xaGVz3Lm8VSRW"
+        }
+
+        result = requests.get(
+            "https://canvas.uw.edu/api/v1/courses/{}/quizzes/{}/questions".format(
+                courseId, quizId
+            ),
+            headers=headers,
+        )
+        quesArr = result.json()
+
+        path = "quiz.txt"
+        with open(path, "w") as file:
+            for question in quesArr:
+                file.write(question["question_name"] + "\n")
+                file.write(question["question_text"] + "\n")
+                for ans in question["answers"]:
+                    file.write(ans["text"] + " - " + str(ans["weight"]) + "\n")
+                file.write("\n")
+
+        return {"result": quesArr}

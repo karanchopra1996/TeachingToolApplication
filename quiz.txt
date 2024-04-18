@@ -1,0 +1,12 @@
+Question 1
+<p>The colors for BMW's symbol consist of blue, black, and white?</p>
+True - 100
+False - 0
+
+Question 2
+<p>What is Ferrari's most common color?</p>
+Yellow - 0.0
+Blue - 0.0
+Black - 0.0
+Red - 100.0
+
