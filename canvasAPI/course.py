@@ -836,7 +836,7 @@ class Course(CanvasObject):
 
         downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
 
-        file_path = os.path.join(downloads_folder, "{}.xml".format(quizObj.title))
+        file_path = os.path.join(downloads_folder, "{}.xml".format(quizObj["title"]))
 
         with open(file_path, "w") as file:
             file.write(xml_content)
