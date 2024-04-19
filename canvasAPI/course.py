@@ -805,7 +805,13 @@ class Course(CanvasObject):
         headers = {
             "Authorization": "Bearer 10~dVERK37nMXapiXX17crpLcI5jJhufVIAnEw2MacMgxR8nnuGwo8xaGVz3Lm8VSRW"
         }
-
+        quizObjRes = requests.get(
+            "https://canvas.uw.edu/api/v1/courses/{}/quizzes/{}".format(
+                courseId, quizId
+            ),
+            headers=headers,
+        )
+        quizObj = quizObjRes.json()
         result = requests.get(
             "https://canvas.uw.edu/api/v1/courses/{}/quizzes/{}/questions".format(
                 courseId, quizId
@@ -830,7 +836,7 @@ class Course(CanvasObject):
 
         downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
 
-        file_path = os.path.join(downloads_folder, "quiz.xml")
+        file_path = os.path.join(downloads_folder, "{}.xml".format(quizObj.title))
 
         with open(file_path, "w") as file:
             file.write(xml_content)
