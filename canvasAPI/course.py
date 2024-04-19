@@ -12,37 +12,74 @@ import os
 import xml.etree.ElementTree as ET
 
 
-def generate_qti_xml(questions):
-    root = ET.Element(
-        "assessment",
-        {
-            "xmlns": "http://www.imsglobal.org/xsd/imsqti_v2p1",
-            "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
-            "xsi:schemaLocation": "http://www.imsglobal.org/xsd/imsqti_v2p1 ims_qti_v2p1.xsd",
-        },
-    )
-    for index, question in enumerate(questions):
-        item = ET.SubElement(root, "item", {"ident": f"item_{index+1}"})
-        itemmetadata = ET.SubElement(item, "itemmetadata")
-        title = ET.SubElement(itemmetadata, "title")
-        title.text = question.question_name
-        presentation = ET.SubElement(item, "presentation")
-        response_str = ""
-        for index, answer in enumerate(question.answers):
-            response_str += f'{chr(65 + index)}. {answer["text"]}\n'
-        material = ET.SubElement(presentation, "material")
-        materialtext = ET.SubElement(material, "materialtext")
-        materialtext.text = response_str
+def text_to_qti(text_content):
+    qti_template = """<?xml version="1.0"?>
+<questestinterop xmlns="http://www.imsglobal.org/xsd/ims_qtiasiv1p2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/ims_qtiasiv1p2 ims_qtiasiv1p2p1.xsd">
+  <assessment title="Generated Quiz">
+    <section ident="section1">
+      {items}
+    </section>
+  </assessment>
+</questestinterop>
+"""
 
-    return ET.tostring(root, encoding="utf-8", method="xml")
+    item_template = """
+<item title="Question {num}" ident="item{num}" maxattempts="1">
+  <presentation>
+    <material>
+      <mattext texttype="text/html"><p>{question}</p></mattext>
+    </material>
+    <response_lid ident="response{num}" rcardinality="Single">
+      <render_choice shuffle="false">
+        {options}
+      </render_choice>
+    </response_lid>
+  </presentation>
+  <resprocessing>
+    <outcomes>
+      <decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/>
+    </outcomes>
+    <respcondition continue="No">
+      <conditionvar>
+        {score_condition}
+      </conditionvar>
+    </respcondition>
+  </resprocessing>
+</item>
+"""
 
-    def canvas_api_get(endpoint, params=None):
-        API_URL = "https://your_canvas_instance/api/v1"
-        ACCESS_TOKEN = os.getenv("CANVAS_ACCESS_TOKEN")
-        headers = {"Authorization": "Bearer " + ACCESS_TOKEN}
-        response = requests.get(API_URL + endpoint, headers=headers, params=params)
-        response.raise_for_status()
-        return response.json()
+    option_template = """
+<response_label ident="{option}">
+  <material>
+    <mattext texttype="text/plain">{option_text}</mattext>
+  </material>
+</response_label>
+"""
+
+    qti_items = ""
+    for i, question in enumerate(text_content.split("\n"), start=1):
+        parts = question.split(" - ")
+        question_text = parts[0]
+        options = parts[1:]
+        options_str = "\n".join(
+            option_template.format(option=chr(ord("A") + j), option_text=option.strip())
+            for j, option in enumerate(options)
+        )
+        score_condition = "\n".join(
+            '<varequal respident="response{}" case="{}">\n<setvar action="Set" varname="SCORE">{}</setvar>\n</varequal>'.format(
+                i, chr(ord("A") + j), "100" if option.startswith("✓") else "0"
+            )
+            for j, option in enumerate(options)
+        )
+        qti_items += item_template.format(
+            num=i,
+            question=question_text,
+            options=options_str,
+            score_condition=score_condition,
+        )
+
+    qti_xml = qti_template.format(items=qti_items)
+    return qti_xml
 
 
 class Course(CanvasObject):
@@ -786,4 +823,16 @@ class Course(CanvasObject):
                     file.write(ans["text"] + " - " + str(ans["weight"]) + "\n")
                 file.write("\n")
 
-        return {"result": quesArr}
+        with open(path, "r") as file:
+            text_content = file.read()
+
+        xml_content = text_to_qti(text_content)
+
+        downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
+
+        file_path = os.path.join(downloads_folder, "quiz.xml")
+
+        with open(file_path, "w") as file:
+            file.write(xml_content)
+
+        return {"result": xml_content}
