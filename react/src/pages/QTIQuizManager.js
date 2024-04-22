@@ -89,6 +89,10 @@ function QTIQuizManager({ courseId }) {
   const exportQuiz = async (event) => {
     event.preventDefault();
     console.log(choosenQuiz)
+    if (choosenQuiz === '') {
+      alert('no quiz selected')
+      return
+    }
     try {
       const formData = new FormData();
       formData.append("quizId", choosenQuiz);
@@ -117,18 +121,16 @@ function QTIQuizManager({ courseId }) {
     try {
       const formData = new FormData();
       formData.append("courseId", courseId);
-      const options = {
-        method: "POST",
-        body: formData,
-      };
-      const response = await fetch(
-        "http://127.0.0.1:5000/exportAllQTI",
-        options
-      );
-      const result = await response.json();
-      console.log(result);
+      setStatusMessage('exporting all qizzes')
+      const response = await fetch("http://127.0.0.1:5000/exportAllQTI", { method: "POST", body: formData })
+      const toPri = await response.json();
+      setStatusMessage('exported all quizzes successfully')
+      console.log(toPri)
+      setTimeout(() => {
+        setStatusMessage('')
+      }, 3000)
     } catch (err) {
-      console.log(err.message);
+      console.log(err.message)
     }
   }
 

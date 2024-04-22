@@ -798,9 +798,6 @@ class Course(CanvasObject):
         ans = result.json()
         return {"ans": ans}
 
-    def export_All_Qti(self, courseId):
-        return {"in canvas api function"}
-
     def export_qti_quiz(self, courseId, quizId):
         headers = {
             "Authorization": "Bearer 10~dVERK37nMXapiXX17crpLcI5jJhufVIAnEw2MacMgxR8nnuGwo8xaGVz3Lm8VSRW"
@@ -842,3 +839,20 @@ class Course(CanvasObject):
             file.write(xml_content)
 
         return {"result": xml_content}
+
+    def export_All_Qti(self, courseId):
+        headers = {
+            "Authorization": "Bearer 10~dVERK37nMXapiXX17crpLcI5jJhufVIAnEw2MacMgxR8nnuGwo8xaGVz3Lm8VSRW"
+        }
+        result = requests.get(
+            "https://canvas.uw.edu/api/v1/courses/{}/quizzes".format(courseId),
+            headers=headers,
+        )
+        toSend = result.json()
+        quizIdArr = []
+        for quiz in toSend:
+            quizIdArr.append(quiz["id"])
+        for quiz in quizIdArr:
+            self.export_qti_quiz(courseId, quiz)
+        return {"res": "exported every quiz"}
+

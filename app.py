@@ -1142,33 +1142,17 @@ def exportAllQTI():
 
 @app.route("/testing", methods=["GET"])
 def testing():
-    payload = {
-        "question": {
-            "question_name": "API question",
-            "question_text": "what is quick sort",
-            "question_type": "multiple_choice_question",
-            "points_possible": "4",
-        }
-    }
     headers = {
         "Authorization": "Bearer 10~dVERK37nMXapiXX17crpLcI5jJhufVIAnEw2MacMgxR8nnuGwo8xaGVz3Lm8VSRW"
     }
 
     result = requests.get(
-        "https://canvas.uw.edu/api/v1/courses/1521081/quizzes/1617705/questions",
+        "https://canvas.uw.edu/api/v1/courses/1521081/quizzes",
         headers=headers,
     )
-    quesArr = result.json()
+    res = result.json()
 
-    path = "quiz.txt"
-    with open(path, "w") as file:
-        for question in quesArr:
-            file.write(question["question_name"] + "\n")
-            file.write(question["question_text"] + "\n")
-            for ans in question["answers"]:
-                file.write(ans["text"] + " - " + str(ans["weight"]) + "\n")
-            file.write("\n")
-    return {"result": quesArr}
+    return {"res": res}
 
 
 if __name__ == "__main__":
