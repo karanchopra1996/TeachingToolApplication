@@ -798,7 +798,10 @@ class Course(CanvasObject):
         ans = result.json()
         return {"ans": ans}
 
-    def export_qti_quiz(self, courseId, quizId):
+    def import_all_qti_quiz(self):
+        return {"res": "inside canvas api function"}
+
+    def export_qti_quiz(self, courseId, quizId, courseName="null", isOne=True):
         headers = {
             "Authorization": "Bearer 10~dVERK37nMXapiXX17crpLcI5jJhufVIAnEw2MacMgxR8nnuGwo8xaGVz3Lm8VSRW"
         }
@@ -833,7 +836,16 @@ class Course(CanvasObject):
 
         downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
 
-        file_path = os.path.join(downloads_folder, "{}.xml".format(quizObj["title"]))
+        if isOne:
+            file_path = os.path.join(
+                downloads_folder, "{}.xml".format(quizObj["title"])
+            )
+        else:
+            folder_name = courseName
+            folder_path = os.path.join(downloads_folder, folder_name)
+            if not os.path.exists(folder_path):
+                os.mkdir(folder_path)
+            file_path = os.path.join(folder_path, "{}.xml".format(quizObj["title"]))
 
         with open(file_path, "w") as file:
             file.write(xml_content)
@@ -848,11 +860,17 @@ class Course(CanvasObject):
             "https://canvas.uw.edu/api/v1/courses/{}/quizzes".format(courseId),
             headers=headers,
         )
+
+        courseInfo = requests.get(
+            "https://canvas.uw.edu/api/v1/courses/{}".format(courseId), headers=headers
+        )
+        course = courseInfo.json()
+        courseName = course["name"]
+
         toSend = result.json()
         quizIdArr = []
         for quiz in toSend:
             quizIdArr.append(quiz["id"])
         for quiz in quizIdArr:
-            self.export_qti_quiz(courseId, quiz)
+            self.export_qti_quiz(courseId, quiz, courseName, False)
         return {"res": "exported every quiz"}
-
