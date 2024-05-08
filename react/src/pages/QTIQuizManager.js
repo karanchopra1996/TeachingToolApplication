@@ -117,6 +117,32 @@ function QTIQuizManager({ courseId }) {
     }
   }
 
+  const importQTIcontent = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("quizName", quizName);
+      formData.append("courseId", courseId);
+      const options = {
+        method: "POST",
+        body: formData,
+      };
+      setStatusMessage("Creating the Quiz")
+      const response = await fetch(
+        "http://127.0.0.1:5000/parsing",
+        options
+      );
+      const result = await response.json();
+      console.log(result);
+      setStatusMessage('created Quiz Sucessfully')
+      setTimeout(() => {
+        setStatusMessage("")
+      }, 3000)
+    } catch (err) {
+      console.log(err.message);
+    }
+  }
+
   const exportAllQuizzes = async () => {
     try {
       const formData = new FormData();
@@ -221,8 +247,23 @@ function QTIQuizManager({ courseId }) {
                   marginBottom: "15px"
                 }}
               >
-                IMPORT
+                IMPORT TEXT
               </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={importQTIcontent}
+                style={{
+                  backgroundColor: "#4A2E83",
+                  height: "40px", width: "300px",
+                  marginLeft: "37%",
+                  marginTop: "0px",
+                  marginBottom: "15px"
+                }}
+              >
+                IMPORT QTI
+              </Button>
+
             </form>
             <Button
               variant="contained"

@@ -1140,11 +1140,13 @@ def exportAllQTI():
     result = canvas.exportEveryQti(courseId)
     return result
 
-def parse_text_content(text_content):
+def parse_text_content(text_content , isXml = False):
     questions = []
     current_question = None
     current_options = {}
-
+    gap=1
+    if(isXml):
+        gap=0
     lines = text_content.split('\n')
     for i, line in enumerate(lines):
         line = line.strip()
@@ -1153,7 +1155,7 @@ def parse_text_content(text_content):
                 questions.append({"question": current_question, "options": current_options})
                 current_options = {}
             # Look for the next line if the current line starts with "Question"
-            current_question = lines[i + 1].strip()
+            current_question = lines[i + gap].strip()
         elif line.startswith(("A)", "B)", "C)", "D)")):
             option_letter = line[0]
             option_text = line[3:].strip()
@@ -1224,55 +1226,87 @@ def testing():
     createQuestions(quiz_data , quizId)
     return {"res": res["id"]}
 
+###################################
+################################
+import lxml.etree as etree
+from werkzeug.datastructures import FileStorage
 
-@app.route("/testingg", methods=["POST"])
+def process_xml_file(xml_file):
+    output_filename = 'processed_qti_data.txt'
+    
+    # Parse the XML file
+    tree = etree.parse(xml_file)
+    root = tree.getroot()
+
+    # Namespace map extraction: 'None' key is used for default namespace if present
+    namespaces = {'ns': root.nsmap[None]} if None in root.nsmap else {}
+
+    # Open a file to write the processed data
+    with open(output_filename, 'w') as file:
+        items = root.xpath('//ns:item', namespaces=namespaces)
+        for item in items:
+            title = item.get('title')
+            file.write(f'Question {title}:\n')
+
+            # Extracting response options within the item
+            responses = item.xpath('.//ns:response_label', namespaces=namespaces)
+            correct_answer_text = None
+            if responses:
+                for response in responses:
+                    response_ident = response.get('ident')
+                    is_correct = response.get('correct') == 'true'
+                    mattext = response.xpath('.//ns:mattext', namespaces=namespaces)
+                    text_content = mattext[0].text if mattext else "No text available"
+                    file.write(f'  {response_ident}. {text_content}\n')
+                    if is_correct:
+                        correct_answer_text = text_content
+            else:
+                file.write('  No responses available.\n')
+            
+            # Writing the correct answer
+            if correct_answer_text:
+                file.write(f'Correct Answer: {correct_answer_text}\n')
+            file.write('----------------\n')
+
+    print(f'Data processed and saved to {output_filename}.')
+
+import xml.etree.ElementTree as ET
+@app.route("/parsing", methods=["POST"])
 def testingg():
+    #get details from frontEnd
+    quizName = request.form.get('quizName')
+    if "file" not in request.files:
+        return "No file selected!"
+    file = request.files["file"]
+    if file.filename == "":
+        return "No file selected!"
+
     headers = {
         "Authorization": "Bearer 10~dVERK37nMXapiXX17crpLcI5jJhufVIAnEw2MacMgxR8nnuGwo8xaGVz3Lm8VSRW"
     }
-    quizName = request.form.get("quizName")
-
-
     payload = {
         "quiz": {
             "title": "{}".format(quizName),  # Replace with your quiz title
         }
     }
-
     result = requests.post(
-        "https://canvas.uw.edu/api/v1/courses/1521081/quizzes",
-        json=payload,
-        headers=headers,
+       "https://canvas.uw.edu/api/v1/courses/1521081/quizzes",
+       json=payload,
+       headers=headers,
     )
     res = result.json()
-    quizId = res["id"]
-    return {"res": res["id"]}
-
+    quizId = res['id']
+    # Extract content from the XML
+    process_xml_file(file)
+    with open('processed_qti_data.txt', 'r') as file:
+        content = file.read()
+    app.logger.info(content)
+    quizData = parse_text_content(content , True)
+    app.logger.info(quizData)
+    createQuestions(quizData , quizId) 
+    return {"try":"to make a quiz from a qti file"} 
 
 if __name__ == "__main__":
     app.run(debug=True)
     # ------------------------------------------------------------------------------------------------------------------------------------
 
-
-# Used for export the quiz in the QTI format.
-@app.route("/exportQTIQuiz", methods=["POST"])
-def exportQTIQuiz():
-    """Export quizzes in QTI format from a specified course"""
-    response = request.get_json(force=True)
-    courseId = response.get("courseId")
-    courseOption = response.get("courseOption")  # Assuming this is used in the logic
-    quizType = response.get("quizType")  # Assuming this is used in the logic
-
-    canvas = get_canvas_instance()
-    if canvas is None:
-        return jsonify({"error": "Not authenticated"}), 401
-
-    result = canvas.exportQuizzesToQTI(courseId, courseOption, quizType)
-    if result == "success":
-        # Assuming the result includes a path or URL to the exported QTI file
-        return jsonify(message="QTI Quizzes exported successfully", status_code=200)
-    else:
-        return jsonify(message="Failed to export QTI Quizzes", status_code=500)
-
-
-# -------------------------------------------------------------------------------------------------------------------------------------
