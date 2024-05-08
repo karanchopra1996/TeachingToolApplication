@@ -1,4 +1,5 @@
 from os import stat
+import lxml.etree as etree
 import os
 from types import resolve_bases
 from flask_cors import CORS
@@ -1139,20 +1140,113 @@ def exportAllQTI():
     result = canvas.exportEveryQti(courseId)
     return result
 
+def parse_text_content(text_content):
+    questions = []
+    current_question = None
+    current_options = {}
 
-@app.route("/testing", methods=["GET"])
-def testing():
+    lines = text_content.split('\n')
+    for i, line in enumerate(lines):
+        line = line.strip()
+        if line.startswith("Question"):
+            if current_question is not None:
+                questions.append({"question": current_question, "options": current_options})
+                current_options = {}
+            # Look for the next line if the current line starts with "Question"
+            current_question = lines[i + 1].strip()
+        elif line.startswith(("A)", "B)", "C)", "D)")):
+            option_letter = line[0]
+            option_text = line[3:].strip()
+            current_options[option_letter] = option_text
+
+    # Append the last question after the loop
+    if current_question is not None:
+        questions.append({"question": current_question, "options": current_options})
+
+    return questions
+
+
+def createQuestions(questionsObj,quizId):
+    print('hello world')
     headers = {
         "Authorization": "Bearer 10~dVERK37nMXapiXX17crpLcI5jJhufVIAnEw2MacMgxR8nnuGwo8xaGVz3Lm8VSRW"
     }
+    for question in questionsObj:
+        quesPayload = {
+            "question":{
+                "question_text":question['question'],
+                "question_type":'multiple_choice_question',
+                "answers":[{
+                    "text": question['options']['A'],
+                },
+                {
+                "text":question['options']['B'],
+                },
+                {
+                 "text":question['options']['C'],
+                },
+                {
+                 "text":question['options']['D'],
+                }]
+            }
+        }
+        quesRes = requests.post(
+        "https://canvas.uw.edu/api/v1/courses/1521081/quizzes/{}/questions".format(quizId),
+        json=quesPayload,
+        headers=headers
+        )
 
-    result = requests.get(
+@app.route('/testing' , methods=["POST"])
+def testing():
+    quizName = request.form.get('quizName')
+    if "file" not in request.files:
+        return "No file selected!"
+    file = request.files["file"]
+    if file.filename == "":
+        return "No file selected!"
+    headers = {
+        "Authorization": "Bearer 10~dVERK37nMXapiXX17crpLcI5jJhufVIAnEw2MacMgxR8nnuGwo8xaGVz3Lm8VSRW"
+    }
+    payload = {
+        "quiz": {
+            "title": "{}".format(quizName),  # Replace with your quiz title
+        }
+    }
+    result = requests.post(
         "https://canvas.uw.edu/api/v1/courses/1521081/quizzes",
+        json=payload,
         headers=headers,
     )
     res = result.json()
+    file_content = file.read().decode('utf-8')
+    quiz_data = parse_text_content(file_content)
+    quizId = res['id']
+    createQuestions(quiz_data , quizId)
+    return {"res": res["id"]}
 
-    return {"res": res}
+
+@app.route("/testingg", methods=["POST"])
+def testingg():
+    headers = {
+        "Authorization": "Bearer 10~dVERK37nMXapiXX17crpLcI5jJhufVIAnEw2MacMgxR8nnuGwo8xaGVz3Lm8VSRW"
+    }
+    quizName = request.form.get("quizName")
+
+
+    payload = {
+        "quiz": {
+            "title": "{}".format(quizName),  # Replace with your quiz title
+        }
+    }
+
+    result = requests.post(
+        "https://canvas.uw.edu/api/v1/courses/1521081/quizzes",
+        json=payload,
+        headers=headers,
+    )
+    res = result.json()
+    quizId = res["id"]
+    return {"res": res["id"]}
 
 
 if __name__ == "__main__":
