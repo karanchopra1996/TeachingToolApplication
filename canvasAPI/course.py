@@ -1,5 +1,6 @@
 from logging import exception
-
+import lxml.etree as etree
+from werkzeug.datastructures import FileStorage
 from requests.api import request
 from .canvas_object import CanvasObject
 from .paginated_list import PaginatedList
@@ -10,7 +11,130 @@ import requests
 from canvasapi import Canvas
 import os
 import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET
 
+def process_xml_file(xml_file):
+    output_filename = 'processed_qti_data.txt'
+    
+    # Parse the XML file
+    tree = etree.parse(xml_file)
+    root = tree.getroot()
+
+    # Namespace map extraction: 'None' key is used for default namespace if present
+    namespaces = {'ns': root.nsmap[None]} if None in root.nsmap else {}
+
+    # Open a file to write the processed data
+    with open(output_filename, 'w') as file:
+        items = root.xpath('//ns:item', namespaces=namespaces)
+        for item in items:
+            title = item.get('title')
+            file.write(f'Question {title}:\n')
+
+            # Extracting response options within the item
+            responses = item.xpath('.//ns:response_label', namespaces=namespaces)
+            correct_answer_text = None
+            if responses:
+                for response in responses:
+                    response_ident = response.get('ident')
+                    is_correct = response.get('correct') == 'true'
+                    mattext = response.xpath('.//ns:mattext', namespaces=namespaces)
+                    text_content = mattext[0].text if mattext else "No text available"
+                    file.write(f'  {response_ident}. {text_content}\n')
+                    if is_correct:
+                        correct_answer_text = text_content
+            else:
+                file.write('  No responses available.\n')
+            
+            # Writing the correct answer
+            if correct_answer_text:
+                file.write(f'Correct Answer: {correct_answer_text}\n')
+            file.write('----------------\n')
+
+    print(f'Data processed and saved to {output_filename}.')
+
+
+def parsing(courseId,quizName,file):
+    headers = {
+        "Authorization": "Bearer 10~dVERK37nMXapiXX17crpLcI5jJhufVIAnEw2MacMgxR8nnuGwo8xaGVz3Lm8VSRW"
+    }
+    payload = {
+        "quiz": {
+            "title": "{}".format(quizName),  # Replace with your quiz title
+        }
+    }
+    result = requests.post(
+       "https://canvas.uw.edu/api/v1/courses/1521081/quizzes",
+       json=payload,
+       headers=headers,
+    )
+    res = result.json()
+    quizId = res['id']
+    # Extract content from the XML
+    process_xml_file(file)
+    with open('processed_qti_data.txt', 'r') as file:
+        content = file.read()
+    quizData = parse_text_content(content , True)
+    createQuestions(quizData , quizId) 
+    return {"try":"to make a quiz from a qti file"} 
+
+
+def parse_text_content(text_content , isXml = False):
+    questions = []
+    current_question = None
+    current_options = {}
+    gap=1
+    if(isXml):
+        gap=0
+    lines = text_content.split('\n')
+    for i, line in enumerate(lines):
+        line = line.strip()
+        if line.startswith("Question"):
+            if current_question is not None:
+                questions.append({"question": current_question, "options": current_options})
+                current_options = {}
+            # Look for the next line if the current line starts with "Question"
+            current_question = lines[i + gap].strip()
+        elif line.startswith(("A)", "B)", "C)", "D)")):
+            option_letter = line[0]
+            option_text = line[3:].strip()
+            current_options[option_letter] = option_text
+
+    # Append the last question after the loop
+    if current_question is not None:
+        questions.append({"question": current_question, "options": current_options})
+
+    return questions
+
+
+def createQuestions(questionsObj,quizId):
+    print('hello world')
+    headers = {
+        "Authorization": "Bearer 10~dVERK37nMXapiXX17crpLcI5jJhufVIAnEw2MacMgxR8nnuGwo8xaGVz3Lm8VSRW"
+    }
+    for question in questionsObj:
+        quesPayload = {
+            "question":{
+                "question_text":question['question'],
+                "question_type":'multiple_choice_question',
+                "answers":[{
+                    "text": question['options']['A'],
+                },
+                {
+                "text":question['options']['B'],
+                },
+                {
+                 "text":question['options']['C'],
+                },
+                {
+                 "text":question['options']['D'],
+                }]
+            }
+        }
+        quesRes = requests.post(
+        "https://canvas.uw.edu/api/v1/courses/1521081/quizzes/{}/questions".format(quizId),
+        json=quesPayload,
+        headers=headers
+        )
 
 def text_to_qti(text_content):
     qti_template = """<?xml version="1.0"?>
@@ -779,28 +903,32 @@ class Course(CanvasObject):
 
     # ------------------------------------AUTHOR : Karan Chopra
 
-    def import_qti_quiz(self, courseId, quizName, **kwargs):
-        payload = {
-            "quiz": {
-                "title": "{}".format(quizName),  # Replace with your quiz title
-            }
-        }
-
+    def import_qti_quiz(self, courseId, quizName,file, **kwargs):
+        file_name = file.filename
+        name, extension = file_name.split(".")
+        if(extension.lower()=='xml'):
+            parsing(courseId,quizName,file)
+            return {"msg":"created quiz"}
         headers = {
             "Authorization": "Bearer 10~dVERK37nMXapiXX17crpLcI5jJhufVIAnEw2MacMgxR8nnuGwo8xaGVz3Lm8VSRW"
         }
-
+        payload = {
+            "quiz": {
+                "title": "{}".format(quizName),  # Replace with your quiz title
+            }   
+        }
         result = requests.post(
             "https://canvas.uw.edu/api/v1/courses/{}/quizzes".format(courseId),
             json=payload,
             headers=headers,
         )
-        ans = result.json()
-        return {"ans": ans}
-
-    def import_all_qti_quiz(self):
-        return {"res": "inside canvas api function"}
-
+        res = result.json()
+        file_content = file.read().decode('utf-8')
+        quiz_data = parse_text_content(file_content)
+        quizId = res['id']
+        createQuestions(quiz_data , quizId)
+        return {"res": res["id"]}
+    
     def export_qti_quiz(self, courseId, quizId, courseName="null", isOne=True):
         headers = {
             "Authorization": "Bearer 10~dVERK37nMXapiXX17crpLcI5jJhufVIAnEw2MacMgxR8nnuGwo8xaGVz3Lm8VSRW"

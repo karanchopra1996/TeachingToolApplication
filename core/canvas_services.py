@@ -525,11 +525,11 @@ class canvas_services:
 
     # this function will convert the file into QTI format
     # and then call the Canvas Api to add a newQuiz in a course
-    def importQuizFromQTI(self, courseId, quizName):
+    def importQuizFromQTI(self, courseId, quizName ,file):
         # text_content = file.read().decode("utf-8")
         # qti_content = generate_qti_quiz(text_content)
         # this will add the qti file as a new quiz
-        result = self.canvasapi.course.import_qti_quiz(courseId, quizName)
+        result = self.canvasapi.course.import_qti_quiz(courseId,quizName,file)
         return result
 
     # downloads a QTI quiz froma course
