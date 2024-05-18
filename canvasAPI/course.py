@@ -1,3 +1,6 @@
+import xml.etree.ElementTree as ET
+import xml.dom.minidom as minidom
+import re
 from logging import exception
 import lxml.etree as etree
 from werkzeug.datastructures import FileStorage
@@ -13,78 +16,53 @@ import os
 import xml.etree.ElementTree as ET
 import xml.etree.ElementTree as ET
 
-def process_xml_file(xml_file):
-    output_filename = 'processed_qti_data.txt'
+from lxml import etree
+
+def qti_to_text(file):
+    qti_content = file.read().decode('utf-8')  # Read the file and decode it as a UTF-8 string
+    root = ET.fromstring(qti_content)
     
-    # Parse the XML file
-    tree = etree.parse(xml_file)
-    root = tree.getroot()
-
-    # Namespace map extraction: 'None' key is used for default namespace if present
-    namespaces = {'ns': root.nsmap[None]} if None in root.nsmap else {}
-
-    # Open a file to write the processed data
-    with open(output_filename, 'w') as file:
-        items = root.xpath('//ns:item', namespaces=namespaces)
-        for item in items:
-            title = item.get('title')
-            file.write(f'Question {title}:\n')
-
-            # Extracting response options within the item
-            responses = item.xpath('.//ns:response_label', namespaces=namespaces)
-            correct_answer_text = None
-            if responses:
-                for response in responses:
-                    response_ident = response.get('ident')
-                    is_correct = response.get('correct') == 'true'
-                    mattext = response.xpath('.//ns:mattext', namespaces=namespaces)
-                    text_content = mattext[0].text if mattext else "No text available"
-                    file.write(f'  {response_ident}. {text_content}\n')
-                    if is_correct:
-                        correct_answer_text = text_content
-            else:
-                file.write('  No responses available.\n')
+    assessment_title = root.attrib.get('title', 'No Title')
+    result = f"Title: {assessment_title}\n\n"
+    
+    question_counter = 1
+    
+    for section in root.findall('section'):
+        for item in section.findall('item'):
+            item_title = item.attrib.get('title', 'No Title')
+            result += f"Question {question_counter}:\n"
             
-            # Writing the correct answer
-            if correct_answer_text:
-                file.write(f'Correct Answer: {correct_answer_text}\n')
-            file.write('----------------\n')
-
-    print(f'Data processed and saved to {output_filename}.')
-
-
-def parsing(courseId,quizName,file):
-    headers = {
-        "Authorization": "Bearer 10~dVERK37nMXapiXX17crpLcI5jJhufVIAnEw2MacMgxR8nnuGwo8xaGVz3Lm8VSRW"
-    }
-    payload = {
-        "quiz": {
-            "title": "{}".format(quizName),  # Replace with your quiz title
-        }
-    }
-    result = requests.post(
-       "https://canvas.uw.edu/api/v1/courses/1521081/quizzes",
-       json=payload,
-       headers=headers,
-    )
-    res = result.json()
-    quizId = res['id']
-    # Extract content from the XML
-    process_xml_file(file)
-    with open('processed_qti_data.txt', 'r') as file:
-        content = file.read()
-    quizData = parse_text_content(content , True)
-    createQuestions(quizData , quizId) 
-    return {"try":"to make a quiz from a qti file"} 
-
-
+            presentation = item.find('presentation')
+            if presentation is not None:
+                material = presentation.find('material')
+                if material is not None:
+                    mattext = material.find('mattext')
+                    if mattext is not None:
+                        result += f"{mattext.text}\n"
+            
+            response_lid = presentation.find('response_lid')
+            if response_lid is not None:
+                render_choice = response_lid.find('render_choice')
+                if render_choice is not None:
+                    option_labels = ['A', 'B', 'C', 'D']
+                    for index, response_label in enumerate(render_choice.findall('response_label')):
+                        response_mattext = response_label.find('mattext')
+                        if response_mattext is not None:
+                            option_text = response_mattext.text.split(' - ')[0]
+                            result += f"{option_labels[index]}) {option_text}\n"
+            
+            result += "\n"
+            question_counter += 1
+    
+    with open("processed_qti_data.txt", "w") as file:
+        file.write(result)
 def parse_text_content(text_content , isXml = False):
     questions = []
     current_question = None
     current_options = {}
     gap=1
     if(isXml):
-        gap=0
+        gap=1 
     lines = text_content.split('\n')
     for i, line in enumerate(lines):
         line = line.strip()
@@ -104,6 +82,32 @@ def parse_text_content(text_content , isXml = False):
         questions.append({"question": current_question, "options": current_options})
 
     return questions
+
+def parsing(courseId,quizName,file):
+    headers = {
+        "Authorization": "Bearer 10~dVERK37nMXapiXX17crpLcI5jJhufVIAnEw2MacMgxR8nnuGwo8xaGVz3Lm8VSRW"
+    }
+    payload = {
+        "quiz": {
+            "title": "{}".format(quizName),  # Replace with your quiz title
+        }
+    }
+    result = requests.post(
+       "https://canvas.uw.edu/api/v1/courses/1521081/quizzes",
+       json=payload,
+       headers=headers,
+    )
+    res = result.json()
+    quizId = res['id']
+    # Extract content from the XML
+    qti_to_text(file)
+    with open('processed_qti_data.txt', 'r') as file:
+        content = file.read()
+    quizData = parse_text_content(content , True)
+    createQuestions(quizData , quizId) 
+    return {"try":"to make a quiz from a qti file"} 
+
+
 
 
 def createQuestions(questionsObj,quizId):
@@ -136,75 +140,74 @@ def createQuestions(questionsObj,quizId):
         headers=headers
         )
 
-def text_to_qti(text_content):
-    qti_template = """<?xml version="1.0"?>
-<questestinterop xmlns="http://www.imsglobal.org/xsd/ims_qtiasiv1p2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/ims_qtiasiv1p2 ims_qtiasiv1p2p1.xsd">
-  <assessment title="Generated Quiz">
-    <section ident="section1">
-      {items}
-    </section>
-  </assessment>
-</questestinterop>
-"""
+def prettify_xml(elem):
+    """Return a pretty-printed XML string for the Element."""
+    rough_string = ET.tostring(elem, 'utf-8')
+    reparsed = minidom.parseString(rough_string)
+    return reparsed.toprettyxml(indent="  ")
 
-    item_template = """
-<item title="Question {num}" ident="item{num}" maxattempts="1">
-  <presentation>
-    <material>
-      <mattext texttype="text/html"><p>{question}</p></mattext>
-    </material>
-    <response_lid ident="response{num}" rcardinality="Single">
-      <render_choice shuffle="false">
-        {options}
-      </render_choice>
-    </response_lid>
-  </presentation>
-  <resprocessing>
-    <outcomes>
-      <decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/>
-    </outcomes>
-    <respcondition continue="No">
-      <conditionvar>
-        {score_condition}
-      </conditionvar>
-    </respcondition>
-  </resprocessing>
-</item>
-"""
+def create_qti_question(question_text, answers):
+    """Create a QTI question item from given text."""
+    item = ET.Element('item', attrib={'title': 'Sample Question', 'identifier': f'q{hash(question_text) % (10 ** 8)}'})
+    
+    presentation = ET.SubElement(item, 'presentation')
+    material = ET.SubElement(presentation, 'material')
+    mattext = ET.SubElement(material, 'mattext')
+    mattext.text = question_text
 
-    option_template = """
-<response_label ident="{option}">
-  <material>
-    <mattext texttype="text/plain">{option_text}</mattext>
-  </material>
-</response_label>
-"""
+    response_lid = ET.SubElement(presentation, 'response_lid', attrib={'ident': 'response1'})
+    render_choice = ET.SubElement(response_lid, 'render_choice')
 
-    qti_items = ""
-    for i, question in enumerate(text_content.split("\n"), start=1):
-        parts = question.split(" - ")
-        question_text = parts[0]
-        options = parts[1:]
-        options_str = "\n".join(
-            option_template.format(option=chr(ord("A") + j), option_text=option.strip())
-            for j, option in enumerate(options)
-        )
-        score_condition = "\n".join(
-            '<varequal respident="response{}" case="{}">\n<setvar action="Set" varname="SCORE">{}</setvar>\n</varequal>'.format(
-                i, chr(ord("A") + j), "100" if option.startswith("✓") else "0"
-            )
-            for j, option in enumerate(options)
-        )
-        qti_items += item_template.format(
-            num=i,
-            question=question_text,
-            options=options_str,
-            score_condition=score_condition,
-        )
+    for idx, (label, answer) in enumerate(answers.items()):
+        response_label = ET.SubElement(render_choice, 'response_label', attrib={'ident': f'a{label}'})
+        mattext = ET.SubElement(response_label, 'mattext')
+        mattext.text = answer
 
-    qti_xml = qti_template.format(items=qti_items)
-    return qti_xml
+    resprocessing = ET.SubElement(item, 'resprocessing')
+    respcondition = ET.SubElement(resprocessing, 'respcondition', attrib={'title': 'correct', 'continue': 'No'})
+    conditionvar = ET.SubElement(respcondition, 'conditionvar')
+    for label, answer in answers.items():
+        if answer.endswith(' - 100.0'):
+            correct_label = label
+            break
+    varequal = ET.SubElement(conditionvar, 'varequal', attrib={'respident': 'response1'})
+    varequal.text = f'a{correct_label}'
 
+    return item
+
+def parse_text_to_qti_sections(text_content):
+    """Parse the text content into multiple QTI sections."""
+    sections = []
+    questions = text_content.strip().split('Question\n')[1:]  # Split by 'Question\n' and ignore the first empty split
+    
+    for question in questions:
+        lines = question.strip().split('\n')
+        question_text_line = lines[0].strip()
+        match = re.match(r'Question\s*(.*):', question_text_line)
+        question_text = match.group(1).strip() if match else question_text_line
+
+        answers = {}
+        for line in lines[1:]:
+            match = re.match(r'([A-Z])\)(.*)', line.strip())
+            if match:
+                label, answer = match.groups()
+                answers[label] = answer.strip()
+
+        sections.append((question_text, answers))
+
+    return sections
+
+def convert_text_to_qti(text_content):
+    """Convert multiple questions in text content to QTI XML."""
+    assessment = ET.Element('assessment', attrib={'title': 'Sample Assessment', 'identifier': 'assess1'})
+    section = ET.SubElement(assessment, 'section', attrib={'identifier': 'section1'})
+    
+    sections = parse_text_to_qti_sections(text_content)
+    for question_text, answers in sections:
+        question_item = create_qti_question(question_text, answers)
+        section.append(question_item)
+
+    return prettify_xml(assessment)
 
 class Course(CanvasObject):
     # def get_course(self, course_id, **kwargs):
@@ -953,14 +956,15 @@ class Course(CanvasObject):
             for question in quesArr:
                 file.write(question["question_name"] + "\n")
                 file.write(question["question_text"] + "\n")
-                for ans in question["answers"]:
-                    file.write(ans["text"] + " - " + str(ans["weight"]) + "\n")
+                options = ['A', 'B', 'C', 'D']
+                for idx, ans in enumerate(question["answers"]):
+                    file.write(options[idx] + ')' + ans["text"] + " - " + str(ans["weight"]) + "\n")
                 file.write("\n")
-
+ 
         with open(path, "r") as file:
             text_content = file.read()
 
-        xml_content = text_to_qti(text_content)
+        xml_content = convert_text_to_qti(text_content)
 
         downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
 

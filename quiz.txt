@@ -1,12 +1,28 @@
-Question 1
-<p>The colors for BMW's symbol consist of blue, black, and white?</p>
-True - 100
-False - 0
+Question
+Question What is the capital of France?:
+A)Paris - 100.0
+B)Lyon - 0.0
+C)Marseille - 0.0
+D)Toulouse - 0.0
 
-Question 2
-<p>What is Ferrari's most common color?</p>
-Yellow - 0.0
-Blue - 0.0
-Black - 0.0
-Red - 100.0
+Question
+Question What is H2O commonly known as?:
+A)Water - 100.0
+B)Oxygen - 0.0
+C)Hydrogen - 0.0
+D)Salt - 0.0
+
+Question
+Question Which planet is known as the Red Planet?:
+A)Mars - 100.0
+B)Jupiter - 0.0
+C)Saturn - 0.0
+D)Venus - 0.0
+
+Question
+Question Which is the largest continent?:
+A)Asia - 100.0
+B)Africa - 0.0
+C)Europe - 0.0
+D)Antarctica - 0.0
 
